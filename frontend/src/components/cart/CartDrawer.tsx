@@ -77,33 +77,41 @@ export function CartDrawer() {
                 </div>
               ) : (
                 items.map((item) => {
-                  const pPrice = item.product.discountPrice !== undefined ? item.product.discountPrice : item.product.price;
-                  return (
-                    <div key={item.id} className="flex items-start space-x-4 p-3 rounded-xl border border-slate-100 hover:border-slate-200 transition">
-                      <img
-                        src={item.product.images?.[0]?.url || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&q=80&w=400"}
-                        alt={item.product.name}
-                        className="w-16 h-16 rounded-lg object-cover bg-slate-50 flex-shrink-0"
-                        referrerPolicy="no-referrer"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-medium text-slate-800 truncate">{item.product.name}</h4>
-                        <p className="text-xs text-slate-400">{item.product.brand.name}</p>
-                        <div className="flex items-center justify-between mt-2">
-                          <p className="text-xs text-slate-500 font-medium">{item.quantity} × {formatCurrency(pPrice)}</p>
-                          <p className="text-sm font-bold text-slate-800">{formatCurrency(pPrice * item.quantity)}</p>
-                        </div>
-                      </div>
-                      <button
-                        id={`cart-drawer-delete-${item.id}`}
-                        onClick={() => removeFromCart(item.id)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition flex-shrink-0"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  );
-                })
+  // Lấy giá an toàn
+  const pPrice = item.product?.discountPrice ?? item.product?.price ?? 0;
+  
+  return (
+    <div key={item.id} className="flex items-start space-x-4 p-3 rounded-xl border border-slate-100 hover:border-slate-200 transition">
+      <img
+        src={item.product?.images?.[0]?.url || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&q=80&w=400"}
+        alt={item.product?.name || "Product"}
+        className="w-16 h-16 rounded-lg object-cover bg-slate-50 flex-shrink-0"
+        referrerPolicy="no-referrer"
+      />
+      <div className="flex-1 min-w-0">
+        {/* THÊM DẤU ? ĐỂ TRÁNH LỖI UNDEFINED */}
+        <h4 className="text-sm font-medium text-slate-800 truncate">{item.product?.name || "Unknown Product"}</h4>
+        <p className="text-xs text-slate-400">{item.product?.brand?.name || "No Brand"}</p>
+        
+        <div className="flex items-center justify-between mt-2">
+          <p className="text-xs text-slate-500 font-medium">
+             {item.quantity} × {formatCurrency(pPrice)}
+          </p>
+          <p className="text-sm font-bold text-slate-800">
+             {formatCurrency(pPrice * item.quantity)}
+          </p>
+        </div>
+      </div>
+      <button
+        id={`cart-drawer-delete-${item.id}`}
+        onClick={() => removeFromCart(item.id)}
+        className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition flex-shrink-0"
+      >
+        <Trash2 className="w-4 h-4" />
+      </button>
+    </div>
+  );
+})
               )}
             </div>
 

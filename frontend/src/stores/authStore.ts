@@ -22,9 +22,12 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       token: null,
-
+      setAuth: (user, token) => set({ 
+        // Đảm bảo bạn lưu cả object user (bao gồm role) mà server trả về
+        user: { ...user }, 
+        token 
+      }),
       // Hàm lưu thông tin khi đăng nhập thành công
-      setAuth: (user, token) => set({ user, token }),
 
       // Hàm xóa thông tin khi logout
       clearAuth : () => set({ user: null, token: null }),

@@ -71,7 +71,8 @@ const loginUser = (UserLogin) => {
                     status : "OK" , 
                     message : "SUCCESS",
                     access_token , 
-                    refresh_token 
+                    refresh_token   ,
+                    data : UserLogin
                 })
         } 
         catch(e) {
