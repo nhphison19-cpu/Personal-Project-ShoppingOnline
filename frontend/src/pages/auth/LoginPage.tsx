@@ -11,6 +11,7 @@ export function LoginPage() {
   const [searchParams] = useSearchParams();
   const [serverError, setServerError] = useState<string | null>(null);
 
+  // Nếu hệ thống nhận diện đã đăng nhập thì tự động chuyển vùng về trang chủ
   useEffect(() => {
     if (isAuthenticated) {
       navigate("/");
@@ -29,12 +30,16 @@ export function LoginPage() {
     try {
       const res = await login(values);
       
-      // 🛠️ ĐÃ SỬA: Chấp nhận cả "SUCCESS" (chuẩn mới) lẫn "OK" (chuẩn cũ phòng hờ)
+      // 🌟 ĐỒNG BỘ: Đón đầu cả status "SUCCESS" của Backend mới
       if (res?.status === "SUCCESS" || res?.status === "OK") {
-        toast.success("Refreshed authentication state! Welcome.");
-        navigate("/");
+        toast.success("Sign in successfully! Welcome back.");
+        
+        // Cưỡng chế trình duyệt load lại toàn bộ trạng thái để cập nhật Navbar mượt mà
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 500);
       } else {
-        setServerError(res?.message || "Đăng nhập không thành công.");
+        setServerError(res?.message || "Tài khoản hoặc mật khẩu không hợp lệ.");
       }
     } catch (err: any) {
       setServerError(err?.response?.data?.message || "Invalid credentials pairing.");
@@ -169,4 +174,5 @@ export function LoginPage() {
     </div>
   );
 }
+
 export default LoginPage;

@@ -1,30 +1,23 @@
-import { axiosClient } from "./axiosClient";
-import { ApiResponse, User } from "../types";
+import { axiosClient } from "./axiosClient"; // Đảm bảo gọi qua client đã có Interceptor cấu hình token
 
 export const userApi = {
-  signUp: async (data: any): Promise<ApiResponse<User>> => {
-    const res = await axiosClient.post("/user/sign-up", data);
-    return res.data;
+  // Hàm xử lý đăng nhập
+  signIn: async (credentials: any) => {
+    const response = await axiosClient.post("/user/login", credentials);
+    return response.data; // 🌟 QUAN TRỌNG: Phải bóc .data để lấy dữ liệu thô từ Backend trả về
   },
-  signIn: async (data: any): Promise<ApiResponse<User>> => {
-    const res = await axiosClient.post("/user/sign-in", data);
-    return res.data;
+
+  // Hàm xử lý đăng ký
+  signUp: async (userData: any) => {
+    const response = await axiosClient.post("/user/register", userData);
+    return response.data;
   },
-  updateUser: async (id: string, data: any): Promise<ApiResponse<User>> => {
-    const res = await axiosClient.put(`/user/update-user/${id}`, data);
-    return res.data;
-  },
-  getUserDetail: async (id: string): Promise<ApiResponse<User>> => {
-    const res = await axiosClient.get(`/user/get-detail-user/${id}`);
-    return res.data;
-  },
-  getAllUsers: async (): Promise<ApiResponse<User[]>> => {
-    const res = await axiosClient.get("/user/getall");
-    return res.data;
-  },
-  deleteUser: async (id: string): Promise<ApiResponse<any>> => {
-    const res = await axiosClient.delete(`/user/delete/${id}`);
-    return res.data;
+
+  // Hàm cập nhật thông tin thành viên
+  updateUser: async (id: string, data: any) => {
+    const response = await axiosClient.put(`/user/update/${id}`, data);
+    return response.data;
   }
 };
+
 export default userApi;

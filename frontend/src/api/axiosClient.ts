@@ -1,49 +1,47 @@
 import axios from "axios";
 import { useAuthStore } from "../stores/authStore";
-import { API_BASE_URL } from "../utils/constants";
 
 export const axiosClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: "http://localhost:5000/api", // 🌟 Hãy đổi lại đúng cổng PORT Backend của bạn (5000 hoặc 8080)
   headers: {
     "Content-Type": "application/json",
   },
 });
 
+// 1. Cấu hình gửi Token lên Backend (Request Interceptor)
 axiosClient.interceptors.request.use(
   (config) => {
-    let token = useAuthStore.getState().token;
+    // Lấy token trực tiếp từ Zustand Store
+    const token = useAuthStore.getState().token;
     
     if (token) {
-      // 🛠️ XỬ LÝ AN TOÀN: Nếu token trong store chưa có chữ 'Bearer ', ta tự động thêm vào.
-      // Nếu đã có sẵn chữ 'Bearer ' rồi thì giữ nguyên, tránh bị nhân đôi chuỗi (Bearer Bearer)
-      const formattedToken = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
-      
-      // Đồng bộ gửi cả 2 header để chiều lòng mọi loại middleware cũ/mới của backend
-      config.headers["token"] = formattedToken;
-      config.headers["Authorization"] = formattedToken;
+      // 🌟 KIỂM TRA CHẮC CHẮN: Nếu token chưa có chữ Bearer thì mới cộng vào
+      if (!token.startsWith("Bearer ")) {
+        config.headers.Authorization = `Bearer ${token}`;
+      } else {
+        config.headers.Authorization = token;
+      }
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
+// 2. Cấu hình xử lý khi Backend trả lỗi (Response Interceptor)
 axiosClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Chỉ xử lý kick người dùng khi họ đang truy cập các trang nội bộ (yêu cầu quyền hạn)
-    // Nếu lỗi 401 xảy ra ngay tại API /login hoặc /register, THẢ RA để giao diện bắt lỗi hiển thị Toast
-    const isAuthRoute = error.config?.url?.includes("/login") || error.config?.url?.includes("/register");
-
-    if (error.response && error.response.status === 401 && !isAuthRoute) {
+    const isAuthPage = window.location.pathname.includes("/login") || window.location.pathname.includes("/register");
+    
+    // Nếu bị lỗi 401 Unauthorized và không phải ở trang Login thì mới đá ra ngoài
+    if (error.response && error.response.status === 401 && !isAuthPage) {
       useAuthStore.getState().clearAuth();
-      
-      // Kiểm tra an toàn xem có đang ở trang login/register không trước khi chuyển hướng
-      const isAuthPage = window.location.pathname.includes("/login") || window.location.pathname.includes("/register");
-      
-      if (!isAuthPage) {
-        window.location.href = "/login?redirected=1";
-      }
+      localStorage.removeItem("token");
+      window.location.href = "/login?redirected=1";
     }
+    
     return Promise.reject(error);
   }
 );
