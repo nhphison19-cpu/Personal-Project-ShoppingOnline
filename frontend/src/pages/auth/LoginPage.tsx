@@ -25,26 +25,26 @@ export function LoginPage() {
     }
   });
 
-  const onSubmit = async (values: any) => {
-    setServerError(null);
-    try {
-      const res = await login(values);
+const onSubmit = async (values: any) => {
+  setServerError(null);
+  try {
+    const res = await login(values);
+    
+    // Kiểm tra cấu trúc phản hồi thực tế từ Backend của bạn
+    if (res?.status === "SUCCESS" || res?.status === "OK") {
+      toast.success("Sign in successfully! Welcome back.");
       
-      // 🌟 ĐỒNG BỘ: Đón đầu cả status "SUCCESS" của Backend mới
-      if (res?.status === "SUCCESS" || res?.status === "OK") {
-        toast.success("Sign in successfully! Welcome back.");
-        
-        // Cưỡng chế trình duyệt load lại toàn bộ trạng thái để cập nhật Navbar mượt mà
-        setTimeout(() => {
-          window.location.href = "/";
-        }, 500);
-      } else {
-        setServerError(res?.message || "Tài khoản hoặc mật khẩu không hợp lệ.");
-      }
-    } catch (err: any) {
-      setServerError(err?.response?.data?.message || "Invalid credentials pairing.");
+      // Thay vì window.location.href, hãy dùng navigate
+      // navigate thay đổi URL mà không cần load lại trang
+      navigate("/"); 
+    } else {
+      setServerError(res?.message || "Tài khoản hoặc mật khẩu không hợp lệ.");
     }
-  };
+  } catch (err: any) {
+    console.error("Login error:", err); // Log lỗi ra console để xem chi tiết
+    setServerError(err?.response?.data?.message || "Invalid credentials pairing.");
+  }
+};
 
   const applyDemo = (email: string, pass: string) => {
     setValue("email", email);

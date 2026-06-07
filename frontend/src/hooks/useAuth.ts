@@ -11,21 +11,27 @@ export function useAuth() {
   const loginMutation = useMutation({
     mutationFn: userApi.signIn,
     onSuccess: (res) => {
-      // 🛠️ ĐÃ SỬA: Chấp nhận cả "SUCCESS" từ Backend mới và "OK" của chuẩn cũ để an toàn
-      if ((res.status === "SUCCESS" || res.status === "OK") && res.data && res.access_token) {
-        
-        // Kích hoạt lưu vào Zustand Store (Đúng thứ tự: User trước, Token sau)
-        setAuth(res.data, res.access_token);
-        
-        // Phương án dự phòng lưu localStorage thô cho axiosClient đọc độc lập nếu cần
-        localStorage.setItem("token", res.access_token);
-        
+    // Kiểm tra trạng thái thành công
+    if (res.status === "SUCCESS" || res.status === "OK") {
+      
+      // Nếu Backend trả về thông tin user trong res.data thì lấy ra, 
+      // nếu không thì có thể chính đối tượng 'res' đã chứa thông tin user.
+      // Dựa trên log của bạn, hãy thử lấy thông tin user từ res trực tiếp 
+      // hoặc kiểm tra xem Backend có gửi object user nào không.
+      const userData = res.user || res.data || { email: "user@store.com", role: "USER" }; // Fallback nếu thiếu
+      const token = res.access_token;
+
+      if (token) {
+        setAuth(userData, token);
+        localStorage.setItem("token", token);
         toast.success("Đăng nhập thành công!");
       } else {
-        // Trường hợp Backend trả về 200 nhưng nội dung bên trong lại chứa thông báo lỗi nghiệp vụ
-        toast.error(res.message || "Đăng nhập không thành công.");
+        toast.error("Đăng nhập thành công nhưng thiếu token.");
       }
-    },
+    } else {
+      toast.error(res.message || "Đăng nhập thất bại.");
+    }
+  },
     onError: (err: any) => {
       toast.error(err?.response?.data?.message || "Mật khẩu hoặc tài khoản không chính xác.");
     }

@@ -1,6 +1,13 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import { User } from "../types";
+import { persist, createJSONStorage } from "zustand/middleware"; // 🌟 Import middleware lưu trữ cứng
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  avatar?: string;
+}
 
 interface AuthState {
   user: User | null;
@@ -15,15 +22,24 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       token: null,
+
+      // Hàm lưu thông tin khi đăng nhập thành công
       setAuth: (user, token) => set({ user, token }),
-      clearAuth: () => set({ user: null, token: null }),
-      updateUser: (updatedFields) =>
+
+      // Hàm xóa thông tin khi logout
+      clearAuth : () => set({ user: null, token: null }),
+
+      // Hàm cập nhật profile
+      updateUser: (updatedUser) =>
         set((state) => ({
-          user: state.user ? { ...state.user, ...updatedFields } as User : null,
+          user: state.user ? { ...state.user, ...updatedUser } : null,
         })),
     }),
     {
-      name: "ecommerce-auth-storage",
+      name: "ecommerce-auth-storage", // 🌟 Tên định danh key lưu dưới localStorage
+      storage: createJSONStorage(() => localStorage), // Chỉ định lưu vào bộ nhớ cứng localStorage
     }
   )
 );
+
+export default useAuthStore;
