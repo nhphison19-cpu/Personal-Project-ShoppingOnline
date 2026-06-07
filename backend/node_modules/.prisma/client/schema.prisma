@@ -1,0 +1,200 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ROLE {
+  USER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPING
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  COD
+  STRIPE
+  VNPAY
+  MOMO
+}
+
+model User {
+  id       String  @id @default(uuid()) // 🌟 Đã sửa từ uulid() thành uuid()
+  name     String
+  email    String  @unique
+  password String
+  avatar   String?
+  role     ROLE    @default(USER)
+
+  cart      Cart?
+  order     Order[]
+  reviews   Review[]
+  addresses Address[]
+  wishlist  Wishlist[]
+
+  createdAt DateTime @default(now()) // Gợi ý đổi tên thành createdAt cho đúng chuẩn Anh-Mỹ
+  updatedAt DateTime @updatedAt // Gợi ý đổi tên thành updatedAt
+}
+
+model Category {
+  id    String  @id @default(uuid())
+  name  String
+  slug  String  @unique
+  image String?
+
+  product Product[]
+}
+
+model Brand {
+  id   String  @id @default(uuid())
+  name String
+  logo String?
+
+  product Product[]
+}
+
+model Product {
+  id            String @id @default(uuid())
+  name          String
+  slug          String @unique
+  description   String
+  price         Float
+  discountPrice Float?
+  stock         Int
+  sold          Int    @default(0)
+
+  categoryId String
+  brandId    String
+
+  category Category @relation(fields: [categoryId], references: [id])
+  brand    Brand    @relation(fields: [brandId], references: [id])
+
+  images     ProductImage[]
+  reviews    Review[]
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+  wishlist   Wishlist[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProductImage {
+  id  String @id @default(uuid())
+  url String
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Cart {
+  id String @id @default(uuid())
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  items CartItem[]
+}
+
+model CartItem {
+  id String @id @default(uuid()) // 🌟 Đã xóa bớt một từ @id thừa
+
+  cartId    String
+  productId String
+  quantity  Int // 🌟 Đã đổi từ String sang Int để tính toán toán học dễ dàng hơn
+
+  cart    Cart    @relation(fields: [cartId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model Order {
+  id String @id @default(uuid())
+
+  userId        String
+  totalPrice    Float
+  status        OrderStatus   @default(PENDING)
+  paymentMethod PaymentMethod
+
+  user User @relation(fields: [userId], references: [id])
+
+  orderItems OrderItem[]
+  payment    Payment?
+
+  shippingAddress String
+
+  createdAt DateTime @default(now())
+}
+
+model OrderItem {
+  id String @id @default(uuid())
+
+  orderId   String // 🌟 Đã đổi từ Int sang String để khớp với id của model Order
+  productId String // 🌟 Đã đổi từ Int sang String để khớp với id của model Product
+
+  quantity Int
+  price    Float
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model Payment {
+  id String @id @default(uuid())
+
+  orderId       String  @unique
+  transactionId String?
+  status        String
+
+  order Order @relation(fields: [orderId], references: [id])
+}
+
+model Review {
+  id String @id @default(uuid())
+
+  rating  Int
+  comment String
+
+  userId    String
+  productId String
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Address {
+  id String @id @default(uuid())
+
+  fullName String
+  phone    String
+  city     String
+  district String
+  ward     String
+  detail   String
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+model Wishlist {
+  id String @id @default(uuid())
+
+  userId    String
+  productId String
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+}

@@ -1,0 +1,6 @@
+{
+  "name": "E-Commerce Storefront & Admin",
+  "description": "A complete online shopping storefront and admin dashboard integration with customer shopping and robust administrative controls.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
